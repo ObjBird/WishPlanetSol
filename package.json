@@ -1,0 +1,25 @@
+{
+  "name": "sol",
+  "version": "1.0.0",
+  "main": "truffle-config.js",
+  "scripts": {
+    "test": "truffle test",
+    "compile": "truffle compile",
+    "migrate": "truffle migrate",
+    "migrate:sepolia": "truffle migrate --network sepolia",
+    "migrate:monad": "truffle migrate --network monad_testnet",
+    "migrate:reset": "truffle migrate --reset",
+    "console:sepolia": "truffle console --network sepolia",
+    "console:monad": "truffle console --network monad_testnet",
+    "verify": "truffle run verify",
+    "flatten": "truffle-flattener contracts/DataToZeroAddress.sol > flattened.sol"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@truffle/hdwallet-provider": "^2.1.15",
+    "dotenv": "^16.5.0"
+  }
+}

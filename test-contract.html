@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DataToZeroAddress 合约测试</title>
+    <script src="https://cdn.jsdelivr.net/npm/web3@4.2.0/dist/web3.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .network-info {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+
+        .contract-info {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #28a745;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background: #fafafa;
+        }
+
+        .section h3 {
+            color: #495057;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h3::before {
+            content: "🔧";
+            margin-right: 10px;
+        }
+
+        .input-group {
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #495057;
+        }
+
+        .input-group input,
+        .input-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
+        .input-group textarea {
+            height: 100px;
+            resize: vertical;
+        }
+
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+            transition: background 0.3s;
+        }
+
+        .btn:hover {
+            background: #0056b3;
+        }
+
+        .btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-success:hover {
+            background: #1e7e34;
+        }
+
+        .btn-warning {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .btn-warning:hover {
+            background: #e0a800;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-danger:hover {
+            background: #c82333;
+        }
+
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .status.info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .result-box {
+            background: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .method-call-item {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+        }
+
+        .method-call-item h4 {
+            margin: 0 0 10px 0;
+            color: #495057;
+        }
+
+        .method-detail {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .method-detail strong {
+            color: #007bff;
+        }
+
+        .events-log {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #000;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        .wallet-status {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #dc3545;
+        }
+
+        .status-indicator.connected {
+            background: #28a745;
+        }
+
+        @keyframes pulse {
+            0% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+
+            100% {
+                opacity: 1;
+            }
+        }
+
+        .loading {
+            animation: pulse 1.5s infinite;
+        }
+
+        .copy-btn {
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        .copy-btn:hover {
+            background: #5a6268;
+        }
+
+        .debug-section {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .debug-section h3 {
+            color: #856404;
+            margin-bottom: 10px;
+        }
+
+        .debug-info {
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔗 DataToZeroAddress 合约测试页面</h1>
+            <p>在 Monad Testnet 上测试你的智能合约</p>
+        </div>
+
+        <!-- 调试信息区域 -->
+        <div class="debug-section">
+            <h3>🐛 调试信息</h3>
+            <div class="debug-info" id="debugInfo">等待连接...</div>
+            <button class="btn btn-warning" id="checkConnectionBtn">检查连接</button>
+            <button class="btn btn-danger" id="resetConnectionBtn">重置连接</button>
+        </div>
+
+        <!-- 网络信息 -->
+        <div class="network-info">
+            <h3>🌐 网络配置</h3>
+            <div><strong>网络:</strong> Monad Testnet</div>
+            <div><strong>Chain ID:</strong> 10143 (0x279F)</div>
+            <div><strong>RPC:</strong> https://testnet-rpc.monad.xyz</div>
+            <div><strong>浏览器:</strong> <a href="https://testnet.monadexplorer.com/" target="_blank">Monad Explorer</a>
+            </div>
+        </div>
+
+        <!-- 合约信息 -->
+        <div class="contract-info">
+            <h3>📄 合约信息</h3>
+            <div><strong>合约地址:</strong> 0x74e3fe893E71444a7e53024C93EFfe8397CD41dB <button class="copy-btn"
+                    onclick="copyToClipboard('0x74e3fe893E71444a7e53024C93EFfe8397CD41dB')">复制</button></div>
+            <div><strong>浏览器链接:</strong> <a
+                    href="https://testnet.monadexplorer.com/address/0x74e3fe893E71444a7e53024C93EFfe8397CD41dB"
+                    target="_blank">查看合约</a></div>
+            <div><strong>部署状态:</strong> ✅ 已成功部署</div>
+        </div>
+
+        <!-- 钱包连接状态 -->
+        <div class="wallet-status">
+            <div class="status-indicator" id="walletIndicator"></div>
+            <span id="walletStatus">未连接钱包</span>
+            <button class="btn btn-success" id="connectWallet">连接 MetaMask</button>
+        </div>
+
+        <!-- 合约配置 -->
+        <div class="section">
+            <h3>⚙️ 合约配置</h3>
+            <div class="input-group">
+                <label for="contractAddress">合约地址:</label>
+                <input type="text" id="contractAddress" value="0x74e3fe893E71444a7e53024C93EFfe8397CD41dB" readonly
+                    style="background-color: #f8f9fa;">
+            </div>
+            <button class="btn" id="loadContract">加载合约</button>
+            <button class="btn btn-warning" id="testContractBtn">测试合约连接</button>
+            <div id="contractStatus"></div>
+        </div>
+
+        <!-- 存储数据 -->
+        <div class="section">
+            <h3>📝 存储数据</h3>
+            <div class="input-group">
+                <label for="dataInput">要存储的数据:</label>
+                <textarea id="dataInput"
+                    placeholder="输入任何文本数据，将被转换为 bytes 存储到合约中&#10;&#10;试试这些示例：&#10;- Hello Monad!&#10;- 我的第一个智能合约测试&#10;- 时间戳: 2024-01-01&#10;- JSON数据: {&quot;name&quot;: &quot;test&quot;, &quot;value&quot;: 123}"></textarea>
+            </div>
+            <div class="input-group">
+                <label for="gasLimitInput">Gas 限制:</label>
+                <input type="number" id="gasLimitInput" value="1000000" min="100000" max="5000000">
+            </div>
+            <button class="btn" id="storeDataBtn" disabled>存储数据 (高级)</button>
+            <button class="btn btn-success" id="simpleStoreBtn" disabled>简单存储</button>
+            <button class="btn btn-warning" id="estimateGasBtn" disabled>估算 Gas</button>
+            <div id="storeResult"></div>
+        </div>
+
+        <!-- 查询单个调用 -->
+        <div class="section">
+            <h3>🔍 查询方法调用</h3>
+            <div class="input-group">
+                <label for="indexInput">调用索引:</label>
+                <input type="number" id="indexInput" min="0" placeholder="输入要查询的调用索引 (从0开始)">
+            </div>
+            <button class="btn btn-warning" id="getMethodCallBtn" disabled>查询调用</button>
+            <button class="btn btn-warning" id="getLatestBtn" disabled>查询最新</button>
+            <div id="methodCallResult"></div>
+        </div>
+
+        <!-- 查询所有调用 -->
+        <div class="section">
+            <h3>📋 所有方法调用</h3>
+            <button class="btn btn-warning" id="getAllCallsBtn" disabled>获取所有调用</button>
+            <button class="btn" id="refreshCallsBtn" disabled>刷新</button>
+            <div id="allCallsResult"></div>
+        </div>
+
+        <!-- 事件监听 -->
+        <div class="section">
+            <h3>📡 事件监听</h3>
+            <button class="btn" id="startListeningBtn" disabled>开始监听事件</button>
+            <button class="btn" id="stopListeningBtn" disabled>停止监听</button>
+            <button class="btn" id="clearEventsBtn">清除事件日志</button>
+            <div class="events-log" id="eventsLog">等待事件...</div>
+        </div>
+    </div>
+
+    <script>
+        // 合约地址 - 你的部署地址
+        const CONTRACT_ADDRESS = '0x74e3fe893E71444a7e53024C93EFfe8397CD41dB';
+
+        // 合约 ABI
+        const contractABI = [
+            {
+                "inputs": [
+                    {
+                        "internalType": "bytes",
+                        "name": "_data",
+                        "type": "bytes"
+                    }
+                ],
+                "name": "storeData",
+                "outputs": [],
+                "stateMutability": "nonpayable",
+                "type": "function"
+            },
+            {
+                "inputs": [
+                    {
+                        "internalType": "uint256",
+                        "name": "_index",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "getMethodCall",
+                "outputs": [
+                    {
+                        "internalType": "address",
+                        "name": "caller",
+                        "type": "address"
+                    },
+                    {
+                        "internalType": "string",
+                        "name": "methodName",
+                        "type": "string"
+                    },
+                    {
+                        "internalType": "bytes",
+                        "name": "data",
+                        "type": "bytes"
+                    },
+                    {
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "inputs": [],
+                "name": "getAllMethodCalls",
+                "outputs": [
+                    {
+                        "components": [
+                            {
+                                "internalType": "address",
+                                "name": "caller",
+                                "type": "address"
+                            },
+                            {
+                                "internalType": "string",
+                                "name": "methodName",
+                                "type": "string"
+                            },
+                            {
+                                "internalType": "bytes",
+                                "name": "data",
+                                "type": "bytes"
+                            },
+                            {
+                                "internalType": "uint256",
+                                "name": "timestamp",
+                                "type": "uint256"
+                            }
+                        ],
+                        "internalType": "struct DataToZeroAddress.MethodCall[]",
+                        "name": "",
+                        "type": "tuple[]"
+                    }
+                ],
+                "stateMutability": "view",
+                "type": "function"
+            },
+            {
+                "anonymous": false,
+                "inputs": [
+                    {
+                        "indexed": true,
+                        "internalType": "address",
+                        "name": "sender",
+                        "type": "address"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "string",
+                        "name": "methodName",
+                        "type": "string"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "bytes",
+                        "name": "data",
+                        "type": "bytes"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "callIndex",
+                        "type": "uint256"
+                    },
+                    {
+                        "indexed": false,
+                        "internalType": "uint256",
+                        "name": "timestamp",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "DataStored",
+                "type": "event"
+            }
+        ];
+
+        // 全局变量
+        let web3;
+        let contract;
+        let userAccount;
+        let eventSubscription;
+        let totalCalls = 0;
+
+        // DOM 元素
+        const elements = {
+            debugInfo: document.getElementById('debugInfo'),
+            checkConnectionBtn: document.getElementById('checkConnectionBtn'),
+            resetConnectionBtn: document.getElementById('resetConnectionBtn'),
+            walletIndicator: document.getElementById('walletIndicator'),
+            walletStatus: document.getElementById('walletStatus'),
+            connectWallet: document.getElementById('connectWallet'),
+            loadContract: document.getElementById('loadContract'),
+            testContractBtn: document.getElementById('testContractBtn'),
+            contractStatus: document.getElementById('contractStatus'),
+            dataInput: document.getElementById('dataInput'),
+            gasLimitInput: document.getElementById('gasLimitInput'),
+            storeDataBtn: document.getElementById('storeDataBtn'),
+            simpleStoreBtn: document.getElementById('simpleStoreBtn'),
+            estimateGasBtn: document.getElementById('estimateGasBtn'),
+            storeResult: document.getElementById('storeResult'),
+            indexInput: document.getElementById('indexInput'),
+            getMethodCallBtn: document.getElementById('getMethodCallBtn'),
+            getLatestBtn: document.getElementById('getLatestBtn'),
+            methodCallResult: document.getElementById('methodCallResult'),
+            getAllCallsBtn: document.getElementById('getAllCallsBtn'),
+            refreshCallsBtn: document.getElementById('refreshCallsBtn'),
+            allCallsResult: document.getElementById('allCallsResult'),
+            startListeningBtn: document.getElementById('startListeningBtn'),
+            stopListeningBtn: document.getElementById('stopListeningBtn'),
+            clearEventsBtn: document.getElementById('clearEventsBtn'),
+            eventsLog: document.getElementById('eventsLog')
+        };
+
+        // 工具函数
+        function showStatus(element, message, type = 'info') {
+            element.innerHTML = `<div class="status ${type}">${message}</div>`;
+        }
+
+        function updateDebugInfo(info) {
+            const timestamp = new Date().toLocaleTimeString();
+            elements.debugInfo.innerHTML = `[${timestamp}] ${info}`;
+            console.log(`Debug: ${info}`);
+        }
+
+        function logEvent(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            elements.eventsLog.innerHTML += `[${timestamp}] ${message}\n`;
+            elements.eventsLog.scrollTop = elements.eventsLog.scrollHeight;
+        }
+
+        function formatTimestamp(timestamp) {
+            return new Date(parseInt(timestamp) * 1000).toLocaleString('zh-CN');
+        }
+
+        function formatAddress(address) {
+            return `${address.slice(0, 6)}...${address.slice(-4)}`;
+        }
+
+        function bytesToString(hexBytes) {
+            try {
+                // 移除 0x 前缀
+                const hex = hexBytes.startsWith('0x') ? hexBytes.slice(2) : hexBytes;
+                // 转换为字符串
+                let str = '';
+                for (let i = 0; i < hex.length; i += 2) {
+                    const byte = parseInt(hex.substr(i, 2), 16);
+                    if (byte !== 0) { // 跳过空字节
+                        str += String.fromCharCode(byte);
+                    }
+                }
+                return str || hexBytes; // 如果转换失败，返回原始hex
+            } catch (error) {
+                return hexBytes;
+            }
+        }
+
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                logEvent(`📋 已复制到剪贴板: ${formatAddress(text)}`);
+            });
+        }
+
+        // 检查连接状态
+        async function checkConnection() {
+            try {
+                updateDebugInfo('检查连接状态...');
+
+                if (!web3) {
+                    updateDebugInfo('❌ Web3 未初始化');
+                    return;
+                }
+
+                const accounts = await web3.eth.getAccounts();
+                const chainId = await web3.eth.getChainId();
+                const blockNumber = await web3.eth.getBlockNumber();
+                const balance = userAccount ? await web3.eth.getBalance(userAccount) : '0';
+
+                const info = `
+✅ 连接正常<br>
+🏠 账户: ${userAccount ? formatAddress(userAccount) : '未连接'}<br>
+🌐 链ID: ${chainId}<br>
+📦 区块: ${blockNumber}<br>
+💰 余额: ${web3.utils.fromWei(balance, 'ether')} MON
+                `;
+
+                updateDebugInfo(info);
+
+            } catch (error) {
+                updateDebugInfo(`❌ 连接检查失败: ${error.message}`);
+            }
+        }
+
+        // 重置连接
+        async function resetConnection() {
+            try {
+                updateDebugInfo('重置连接中...');
+
+                // 清除现有连接
+                web3 = null;
+                contract = null;
+                userAccount = null;
+
+                // 重新连接
+                await connectWallet();
+
+            } catch (error) {
+                updateDebugInfo(`❌ 重置失败: ${error.message}`);
+            }
+        }
+
+        // 连接钱包
+        async function connectWallet() {
+            try {
+                updateDebugInfo('正在连接钱包...');
+
+                if (typeof window.ethereum !== 'undefined') {
+                    web3 = new Web3(window.ethereum);
+
+                    const accounts = await window.ethereum.request({
+                        method: 'eth_requestAccounts'
+                    });
+
+                    userAccount = accounts[0];
+
+                    // 检查并切换网络
+                    const chainId = await web3.eth.getChainId();
+                    updateDebugInfo(`当前链ID: ${chainId}`);
+
+                    if (chainId !== 10143) {
+                        updateDebugInfo('正在切换到 Monad 测试网...');
+                        try {
+                            await window.ethereum.request({
+                                method: 'wallet_switchEthereumChain',
+                                params: [{ chainId: '0x279F' }],
+                            });
+                        } catch (switchError) {
+                            if (switchError.code === 4902) {
+                                updateDebugInfo('添加 Monad 测试网...');
+                                await window.ethereum.request({
+                                    method: 'wallet_addEthereumChain',
+                                    params: [{
+                                        chainId: '0x279F',
+                                        chainName: 'Monad Testnet',
+                                        nativeCurrency: {
+                                            name: 'MON',
+                                            symbol: 'MON',
+                                            decimals: 18
+                                        },
+                                        rpcUrls: ['https://testnet-rpc.monad.xyz'],
+                                        blockExplorerUrls: ['https://testnet.monadexplorer.com/']
+                                    }]
+                                });
+                            }
+                        }
+                    }
+
+                    updateWalletStatus(true);
+                    updateDebugInfo(`✅ 钱包连接成功: ${formatAddress(userAccount)}`);
+
+                    // 自动加载合约
+                    await loadContract();
+
+                } else {
+                    throw new Error('请安装 MetaMask 钱包');
+                }
+            } catch (error) {
+                updateDebugInfo(`❌ 钱包连接失败: ${error.message}`);
+                showStatus(elements.contractStatus, `连接失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 更新钱包状态
+        function updateWalletStatus(connected) {
+            if (connected) {
+                elements.walletIndicator.classList.add('connected');
+                elements.walletStatus.textContent = `已连接: ${formatAddress(userAccount)}`;
+                elements.connectWallet.textContent = '已连接';
+                elements.connectWallet.disabled = true;
+            } else {
+                elements.walletIndicator.classList.remove('connected');
+                elements.walletStatus.textContent = '未连接钱包';
+                elements.connectWallet.textContent = '连接 MetaMask';
+                elements.connectWallet.disabled = false;
+            }
+        }
+
+        // 加载合约
+        async function loadContract() {
+            try {
+                updateDebugInfo('正在加载合约...');
+
+                if (!web3) {
+                    throw new Error('请先连接钱包');
+                }
+
+                contract = new web3.eth.Contract(contractABI, CONTRACT_ADDRESS);
+
+                showStatus(elements.contractStatus, '✅ 合约加载成功!', 'success');
+                updateDebugInfo(`✅ 合约已加载: ${formatAddress(CONTRACT_ADDRESS)}`);
+
+                // 启用按钮
+                elements.storeDataBtn.disabled = false;
+                elements.simpleStoreBtn.disabled = false;
+                elements.estimateGasBtn.disabled = false;
+
+            } catch (error) {
+                updateDebugInfo(`❌ 合约加载失败: ${error.message}`);
+                showStatus(elements.contractStatus, `加载失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 测试合约连接
+        async function testContract() {
+            try {
+                updateDebugInfo('测试合约连接...');
+
+                if (!contract) {
+                    throw new Error('合约未加载');
+                }
+
+                // 尝试调用只读方法
+                const calls = await contract.methods.getAllMethodCalls().call();
+
+                showStatus(elements.contractStatus, `✅ 合约测试成功! 当前有 ${calls.length} 条记录`, 'success');
+                updateDebugInfo(`✅ 合约测试成功，记录数: ${calls.length}`);
+
+            } catch (error) {
+                updateDebugInfo(`❌ 合约测试失败: ${error.message}`);
+                showStatus(elements.contractStatus, `测试失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 估算 Gas
+        async function estimateGas() {
+            try {
+                const data = elements.dataInput.value.trim();
+                if (!data) {
+                    showStatus(elements.storeResult, '请输入要存储的数据', 'error');
+                    return;
+                }
+
+                updateDebugInfo('正在估算 Gas...');
+
+                const dataBytes = web3.utils.asciiToHex(data);
+                const gasEstimate = await contract.methods.storeData(dataBytes).estimateGas({
+                    from: userAccount
+                });
+
+                const gasPrice = await web3.eth.getGasPrice();
+                const gasCost = web3.utils.fromWei((BigInt(gasEstimate) * BigInt(gasPrice)).toString(), 'ether');
+
+                elements.gasLimitInput.value = Math.ceil(gasEstimate * 1.2); // 增加20%余量
+
+                showStatus(elements.storeResult,
+                    `⛽ Gas 估算结果:<br>
+                    估算 Gas: ${gasEstimate}<br>
+                    推荐 Gas: ${Math.ceil(gasEstimate * 1.2)}<br>
+                    预估费用: ${gasCost} MON`,
+                    'info'
+                );
+
+                updateDebugInfo(`⛽ Gas 估算: ${gasEstimate} (推荐: ${Math.ceil(gasEstimate * 1.2)})`);
+
+            } catch (error) {
+                updateDebugInfo(`❌ Gas 估算失败: ${error.message}`);
+                showStatus(elements.storeResult, `Gas 估算失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 简单存储数据
+        async function simpleStoreData() {
+            try {
+                const data = elements.dataInput.value.trim() || "测试数据";
+
+                updateDebugInfo('开始存储数据...');
+                elements.simpleStoreBtn.disabled = true;
+                elements.simpleStoreBtn.classList.add('loading');
+
+                showStatus(elements.storeResult, '正在发送交易...', 'info');
+
+                const dataBytes = web3.utils.asciiToHex(data);
+
+                // 使用较低的Gas和简单的交易参数
+                const tx = await contract.methods.storeData(dataBytes).send({
+                    from: userAccount,
+                    gas: 200000,  // 降低Gas限制
+                    gasPrice: web3.utils.toWei('20', 'gwei')  // 设置较低的Gas价格
+                });
+
+                showStatus(elements.storeResult,
+                    `✅ 数据存储成功!<br>
+                    交易哈希: <a href="https://testnet.monadexplorer.com/tx/${tx.transactionHash}" target="_blank">${formatAddress(tx.transactionHash)}</a>`,
+                    'success'
+                );
+
+                updateDebugInfo(`✅ 存储成功: "${data}" (Tx: ${formatAddress(tx.transactionHash)})`);
+                elements.dataInput.value = '';
+
+            } catch (error) {
+                updateDebugInfo(`❌ 存储失败: ${error.message}`);
+                showStatus(elements.storeResult, `存储失败: ${error.message}`, 'error');
+                console.error('存储错误详情:', error);
+            } finally {
+                elements.simpleStoreBtn.disabled = false;
+                elements.simpleStoreBtn.classList.remove('loading');
+            }
+        }
+
+        // 高级存储数据
+        async function storeData() {
+            try {
+                const data = elements.dataInput.value.trim();
+                const gasLimit = elements.gasLimitInput.value;
+
+                if (!data) {
+                    showStatus(elements.storeResult, '请输入要存储的数据', 'error');
+                    return;
+                }
+
+                updateDebugInfo(`开始存储数据，Gas限制: ${gasLimit}`);
+                elements.storeDataBtn.disabled = true;
+                elements.storeDataBtn.classList.add('loading');
+
+                showStatus(elements.storeResult, '正在发送交易...', 'info');
+
+                const dataBytes = web3.utils.asciiToHex(data);
+
+                const tx = await contract.methods.storeData(dataBytes).send({
+                    from: userAccount,
+                    gas: parseInt(gasLimit)
+                });
+
+                showStatus(elements.storeResult,
+                    `✅ 数据存储成功!<br>
+                    交易哈希: <a href="https://testnet.monadexplorer.com/tx/${tx.transactionHash}" target="_blank">${formatAddress(tx.transactionHash)}</a>`,
+                    'success'
+                );
+
+                updateDebugInfo(`✅ 存储成功: "${data}" (Tx: ${formatAddress(tx.transactionHash)})`);
+                elements.dataInput.value = '';
+
+            } catch (error) {
+                updateDebugInfo(`❌ 存储失败: ${error.message}`);
+                showStatus(elements.storeResult, `存储失败: ${error.message}`, 'error');
+                console.error('存储错误详情:', error);
+            } finally {
+                elements.storeDataBtn.disabled = false;
+                elements.storeDataBtn.classList.remove('loading');
+            }
+        }
+
+        // 查询单个方法调用
+        async function getMethodCall() {
+            try {
+                const index = elements.indexInput.value.trim();
+                if (index === '') {
+                    showStatus(elements.methodCallResult, '请输入调用索引', 'error');
+                    return;
+                }
+
+                const result = await contract.methods.getMethodCall(index).call();
+
+                const caller = result[0];
+                const methodName = result[1];
+                const data = result[2];
+                const timestamp = result[3];
+
+                const displayData = bytesToString(data);
+
+                elements.methodCallResult.innerHTML = `
+                    <div class="method-call-item">
+                        <h4>📞 方法调用 #${index}</h4>
+                        <div class="method-detail"><strong>调用者:</strong> ${caller} <button class="copy-btn" onclick="copyToClipboard('${caller}')">复制</button></div>
+                        <div class="method-detail"><strong>方法名:</strong> ${methodName}</div>
+                        <div class="method-detail"><strong>数据:</strong> ${displayData}</div>
+                        <div class="method-detail"><strong>原始数据:</strong> ${data}</div>
+                        <div class="method-detail"><strong>时间戳:</strong> ${formatTimestamp(timestamp)}</div>
+                    </div>
+                `;
+
+                logEvent(`🔍 查询调用 #${index}: "${displayData}"`);
+
+            } catch (error) {
+                console.error('查询失败:', error);
+                showStatus(elements.methodCallResult, `查询失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 查询最新调用
+        async function getLatestCall() {
+            if (totalCalls > 0) {
+                elements.indexInput.value = totalCalls - 1;
+                await getMethodCall();
+            } else {
+                showStatus(elements.methodCallResult, '暂无调用记录', 'info');
+            }
+        }
+
+        // 获取所有方法调用
+        async function getAllMethodCalls() {
+            try {
+                const result = await contract.methods.getAllMethodCalls().call();
+                totalCalls = result.length;
+
+                if (result.length === 0) {
+                    elements.allCallsResult.innerHTML = '<div class="status info">暂无方法调用记录</div>';
+                    return;
+                }
+
+                let html = `<div class="status success">共找到 ${result.length} 条调用记录</div>`;
+
+                // 倒序显示（最新的在前面）
+                result.slice().reverse().forEach((call, reverseIndex) => {
+                    const actualIndex = result.length - 1 - reverseIndex;
+                    const displayData = bytesToString(call.data);
+                    html += `
+                        <div class="method-call-item">
+                            <h4>📞 调用 #${actualIndex} ${reverseIndex === 0 ? '(最新)' : ''}</h4>
+                            <div class="method-detail"><strong>调用者:</strong> ${call.caller} <button class="copy-btn" onclick="copyToClipboard('${call.caller}')">复制</button></div>
+                            <div class="method-detail"><strong>方法名:</strong> ${call.methodName}</div>
+                            <div class="method-detail"><strong>数据:</strong> ${displayData}</div>
+                            <div class="method-detail"><strong>时间戳:</strong> ${formatTimestamp(call.timestamp)}</div>
+                        </div>
+                    `;
+                });
+
+                elements.allCallsResult.innerHTML = html;
+                logEvent(`📋 获取到 ${result.length} 条调用记录`);
+
+            } catch (error) {
+                console.error('获取调用记录失败:', error);
+                showStatus(elements.allCallsResult, `获取失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 开始监听事件
+        async function startListening() {
+            try {
+                if (eventSubscription) {
+                    eventSubscription.unsubscribe();
+                }
+
+                eventSubscription = contract.events.DataStored()
+                    .on('data', function (event) {
+                        const { sender, methodName, data, callIndex, timestamp } = event.returnValues;
+                        const displayData = bytesToString(data);
+                        logEvent(`📡 新事件: ${methodName} | 发送者: ${formatAddress(sender)} | 数据: "${displayData}" | 索引: ${callIndex}`);
+
+                        // 自动刷新调用列表
+                        setTimeout(() => getAllMethodCalls(), 1000);
+                    })
+                    .on('error', function (error) {
+                        logEvent(`❌ 事件监听错误: ${error.message}`);
+                    });
+
+                elements.startListeningBtn.disabled = true;
+                elements.stopListeningBtn.disabled = false;
+                logEvent('🎧 开始监听 DataStored 事件...');
+
+            } catch (error) {
+                console.error('开始监听失败:', error);
+                logEvent(`❌ 监听失败: ${error.message}`);
+            }
+        }
+
+        // 停止监听事件
+        function stopListening() {
+            if (eventSubscription) {
+                eventSubscription.unsubscribe();
+                eventSubscription = null;
+            }
+
+            elements.startListeningBtn.disabled = false;
+            elements.stopListeningBtn.disabled = true;
+            logEvent('🛑 已停止事件监听');
+        }
+
+        // 清除事件日志
+        function clearEvents() {
+            elements.eventsLog.innerHTML = '';
+            logEvent('📡 事件日志已清除');
+        }
+
+        // 事件绑定
+        elements.checkConnectionBtn.addEventListener('click', checkConnection);
+        elements.resetConnectionBtn.addEventListener('click', resetConnection);
+        elements.connectWallet.addEventListener('click', connectWallet);
+        elements.loadContract.addEventListener('click', loadContract);
+        elements.testContractBtn.addEventListener('click', testContract);
+        elements.estimateGasBtn.addEventListener('click', estimateGas);
+        elements.simpleStoreBtn.addEventListener('click', simpleStoreData);
+        elements.storeDataBtn.addEventListener('click', storeData);
+        elements.getMethodCallBtn.addEventListener('click', getMethodCall);
+        elements.getLatestBtn.addEventListener('click', getLatestCall);
+        elements.getAllCallsBtn.addEventListener('click', getAllMethodCalls);
+        elements.refreshCallsBtn.addEventListener('click', getAllMethodCalls);
+        elements.startListeningBtn.addEventListener('click', startListening);
+        elements.stopListeningBtn.addEventListener('click', stopListening);
+        elements.clearEventsBtn.addEventListener('click', clearEvents);
+
+        // 回车键快捷操作
+        elements.dataInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter' && e.ctrlKey) {
+                storeData();
+            }
+        });
+
+        elements.indexInput.addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                getMethodCall();
+            }
+        });
+
+        // 初始化日志
+        logEvent('🚀 DataToZeroAddress 合约测试页面已加载');
+        logEvent(`📄 合约地址: ${CONTRACT_ADDRESS}`);
+        logEvent('💡 请连接 MetaMask 钱包开始测试');
+
+        // 检查是否已连接钱包
+        if (typeof window.ethereum !== 'undefined') {
+            window.ethereum.request({ method: 'eth_accounts' })
+                .then(accounts => {
+                    if (accounts.length > 0) {
+                        web3 = new Web3(window.ethereum);
+                        userAccount = accounts[0];
+                        updateWalletStatus(true);
+                        logEvent(`🔗 检测到已连接的钱包: ${formatAddress(userAccount)}`);
+                        loadContract();
+                    }
+                });
+        }
+    </script>
+</body>
+
+</html>
